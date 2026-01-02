@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from user.serializer import UserSerializer
 from note.models import Note
 
 class NoteSerializer(serializers.ModelSerializer):

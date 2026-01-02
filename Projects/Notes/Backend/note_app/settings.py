@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'note.apps.NoteConfig',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'drf_spectacular'
 ]
 
 MIDDLEWARE = [
@@ -56,6 +58,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+AUTHENTICATION_BACKEND = [
+    'django.contrib.auth.backends.ModelBackend'
 ]
 
 ROOT_URLCONF = 'note_app.urls'
@@ -110,6 +116,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Notes API",
+    "DESCRIPTION": "API documentation for Notes application",
+    "VERSION": "1.0.0",
+}
 
 
 # Internationalization
