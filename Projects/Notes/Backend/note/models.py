@@ -7,8 +7,8 @@ class Note(models.Model):
     content = models.TextField("Notes Content")
     created_date = models.DateTimeField("Created Date", auto_now_add=True)
     last_updated_date = models.DateTimeField("Last Updated", null=True, blank=True)
-
+    is_active = models.BooleanField("Is Active", default=True)
     is_completed = models.BooleanField("Task Done", default=False)
-    # authour = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
     def __str__(self):
         return self.title

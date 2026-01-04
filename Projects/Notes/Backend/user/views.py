@@ -29,7 +29,7 @@ class UserViewSet(viewsets.GenericViewSet):
                     "message": serailzer_data.errors
                 }, status=status.HTTP_400_BAD_REQUEST
             )
-        user_data = serailzer_data.data
+        user_data = serailzer_data.validated_data # this will return the complete data including the one with write_only fields
         user_obj = authenticate(email=user_data.get('username'), password=user_data.get('password'))
         if not user_obj:
             return Response(
