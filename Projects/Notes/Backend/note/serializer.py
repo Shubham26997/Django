@@ -17,3 +17,8 @@ class NoteSerializer(serializers.ModelSerializer):
         if queryset.exists():
             raise serializers.ValidationError("A note with this title already exists.")
         return value.strip()
+    
+    def validate_content(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Content can't be Empty, Please add some valid data")
+        return value.strip()

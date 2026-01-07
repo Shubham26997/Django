@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework import viewsets, response, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 from note.serializer import NoteSerializer
 from note.models import Note
@@ -10,11 +11,18 @@ from note.models import Note
 def home_note(self,request):
     return render(request, 'base.html')
 
+class NotePagination(PageNumberPagination):
+    page_size = 4
+    page_query_param = 'pagenum'
+    page_size_query_param = 'pagelen'
+    max_page_size = 50
+
 # Create your views here.
 class NoteViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = Note.objects.filter(is_active=True)
+    queryset = Note.objects.filter(is_active=True).order_by('-id')
     serializer_class = NoteSerializer
+    pagination_class = NotePagination
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -61,16 +69,22 @@ class NoteViewSet(viewsets.GenericViewSet):
         if is_completed:
             compelted = is_completed.lower() == "true"
         # compelted = request.GET.get("is_completed", False) in {"true", True}
-        queryset = self.get_queryset().order_by("-id")
+        queryset = self.get_queryset()
         if note_id:
             queryset = queryset.filter(id=note_id)
         if title:
             queryset = queryset.filter(title__icontains=title)
         if compelted:
             queryset = queryset.filter(is_completed=compelted)
-        req_data = self.get_serializer(queryset, many=True)
+        page_data = self.paginate_queryset(queryset=queryset)
+        req_data = self.get_serializer(page_data, many=True)
+        req_result = self.get_paginated_response(req_data.data)
+        if req_result:
+            result = req_result.data.get('results')
+            count = req_result.data.get('count')
         return response.Response(data={
-            "data": req_data.data,
+            "data": result,
+            "count": count,
             "message": "Note list Fetched"
             },
         status=status.HTTP_200_OK)
@@ -78,9 +92,9 @@ class NoteViewSet(viewsets.GenericViewSet):
     def delete_note(self,request, pk=None):
         note_data = self.get_object()
         if note_data:
-            self.perform_update(note_data)
-            # note_data.is_active = False
-            # note_data.save()
+            # self.perform_update(note_data)
+            note_data.is_active = False
+            note_data.save(update_fields=['is_active'])
             return response.Response({
                 "data": [],
                 "message": "Deleted Success"
