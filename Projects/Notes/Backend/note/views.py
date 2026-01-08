@@ -17,6 +17,18 @@ class NotePagination(PageNumberPagination):
     page_size_query_param = 'pagelen'
     max_page_size = 50
 
+    def get_paginated_response(self, data):
+        msg = getattr(self,"pagination_message", "Success")
+        return response.Response(data={
+            "data":data,
+            "meta":{
+                "count": self.page.paginator.count,
+                "next": self.get_next_link(),
+                "prev": self.get_previous_link()
+            },
+            "message": msg
+        },status=status.HTTP_200_OK)
+
 # Create your views here.
 class NoteViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
@@ -61,6 +73,7 @@ class NoteViewSet(viewsets.GenericViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # return HttpResponse("Create note")
 
+
     def list_note(self,request):
         title = request.GET.get("title")
         note_id = int(request.GET.get("note_id", 0))
@@ -78,16 +91,9 @@ class NoteViewSet(viewsets.GenericViewSet):
             queryset = queryset.filter(is_completed=compelted)
         page_data = self.paginate_queryset(queryset=queryset)
         req_data = self.get_serializer(page_data, many=True)
-        req_result = self.get_paginated_response(req_data.data)
-        if req_result:
-            result = req_result.data.get('results')
-            count = req_result.data.get('count')
-        return response.Response(data={
-            "data": result,
-            "count": count,
-            "message": "Note list Fetched"
-            },
-        status=status.HTTP_200_OK)
+        self.paginator.pagination_message = "Note list Fetched"
+        return self.get_paginated_response(req_data.data)
+
 
     def delete_note(self,request, pk=None):
         note_data = self.get_object()
@@ -103,6 +109,7 @@ class NoteViewSet(viewsets.GenericViewSet):
             "data": [],
             "message": "No Note Found!!"
         }, status=status.HTTP_400_BAD_REQUEST)
+
 
     def edit_note(self,request, pk=None):
         note_data = self.get_object()
