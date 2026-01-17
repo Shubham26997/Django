@@ -131,6 +131,16 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 3
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379",
+    }
+}
+
+AUTH_TOKEN_TTL = 60*5
+AUTH_TOKEN_KEY = "auth:token:user:{}"
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Notes API",
     "DESCRIPTION": "API documentation for Notes application",
